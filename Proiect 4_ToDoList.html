@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./site.css">
+  <!-- <script src="https://kit.fontawesome.com/82b4f12a26.js" crossorigin="anonymous"></script> -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <title>Proiect 3: To Do List</title>
+  <style>
+    *{
+  font-family: 'Roboto';
+  user-select: none;
+}
+.container{
+  width:60%;
+  margin:0 auto;
+  box-shadow: 3px 3px 15px #888;
+  padding:1rem;
+}
+.form-group{
+  border-bottom:1px solid darkgray;
+  padding:1rem 0.5rem 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.form-group input{
+  flex: 1;
+  margin-right: 1rem;
+  padding:0.3rem;
+  outline: none;
+}
+.form-group button{
+  padding:0.3rem;  
+}
+
+.list-container{
+  min-height: 50vh;
+}
+.list-container > input{
+  width: 50%;
+  margin-right: 1rem;
+  padding:0.3rem;
+  outline: none;
+}
+ul{
+  list-style: none;
+  padding: 0;
+}
+li{
+  border-bottom: 1px solid lightgray;
+  padding-bottom: 0.3rem;
+  margin-top:0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+li span{
+  flex:1;
+}
+li i{
+  color:red;
+  opacity: 0.5;
+  cursor: pointer;
+}
+li > i:hover{
+  opacity: 1;
+}
+input:checked + span{
+	text-decoration:line-through;
+  color:gray;
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Lista</h1>
+    <div class="form-group">
+      <input type="text" id="txtItem" placeholder="text nou ...">
+      <button id="btnAdauga">Adauga</button>
+    </div>
+    <div class="list-container">
+      <h2>Elemente</h2>
+      <input type="text" id="txtFiltru" placeholder="filtru">
+      <ul id="lista">
+      </ul>
+      <button id="btnGoleste">Goleste lista</button>
+    </div>
+  </div>
+  
+  <script src="./site.js"></script>
+  <script>
+  const btnAdauga = document.getElementById('btnAdauga');
+const btnGoleste = document.getElementById('btnGoleste');
+const txtItem = document.getElementById('txtItem');
+const txtFiltru = document.getElementById('txtFiltru');
+const lista = document.getElementById('lista');
+const key = "lista";
+function registerHandlers(){
+  document.addEventListener('DOMContentLoaded',()=>{
+    btnAdauga.addEventListener('click',adaugaTask);
+    btnGoleste.addEventListener('click',golesteLista);
+    lista.addEventListener('click', onListClick);
+    txtFiltru.addEventListener('keyup', onKeyUp);
+  });
+  citesteDinLocalStorage().forEach(x=>{
+    adaugaElement(x.text, x.isDone);
+  });
+}
+function adaugaTask(e){
+  if(!txtItem.value || txtItem.value==''){
+    alert('Nu se pot adauga elemente goale!');
+    return;
+  }
+  adaugaElement(txtItem.value);
+  scrieInLocalStorage({isDone:false, text:txtItem.value});//localstorage
+  txtItem.value=null;
+}
+function adaugaElement(value, isDone=false){
+  let el = document.createElement('li');
+  el.innerHTML = `<input type="checkbox" ${isDone?"checked":""}><span>${value}</span><i>X</i>`;
+  lista.appendChild(el);
+}
+function onListClick(e){
+  let tg = e.target,
+      li = tg.closest('li');
+  if(tg.nodeName==='I'){
+    if(!confirm('Esti sigur ca vrei sa stergi task-ul?')){
+      return;
+    }
+    let span = li.querySelector('span');
+    console.log(span.textContent);
+    li.remove();
+    //sterge din items
+    stergeDinLocalStorage(span.textContent);
+  }
+  else{
+    const chk = li.querySelector('input[type="checkbox"]');
+    chk.checked = !chk.checked;
+    scrieInLocalStorage({isDone:chk.checked, text:chk.nextElementSibling.textContent});
+  }
+}
+function golesteLista(e){
+  if(!confirm('Esti sigur ca vrei sa golesti lista?')){
+    return;
+  }
+  lista.innerHTML='';
+  //goleste items si scrie in localStorage
+  localStorage.clear();
+}
+let time;
+function onKeyUp(e){
+  clearTimeout(time);
+  time = setTimeout(onFilter(e),400);
+}
+function onFilter(e){
+  let filtru = e.target.value.toLowerCase();
+  document.querySelectorAll('li').forEach(i=>{
+    const txt = i.children[1].textContent.toLowerCase();
+    if(txt.indexOf(filtru)>-1){
+      i.style.display="flex";
+    }else{
+      i.style.display="none";
+    }
+  });
+}
+function scrieInLocalStorage(obj){
+  if(!obj)
+    return;
+  let items;
+  if(localStorage.getItem(key)===null){
+      items=[];
+  } else {
+      items=JSON.parse(localStorage.getItem(key));
+  }
+  let item = items.find(x=>x.text==obj.text);
+  if(item){
+    Object.assign(item, obj);
+  }else{
+    items.push(obj);
+  }
+  localStorage.setItem(key, JSON.stringify(items));
+}
+function stergeDinLocalStorage(text){
+  let items;
+  if(localStorage.getItem(key)===null){
+      items=[];
+  } else {
+      items=JSON.parse(localStorage.getItem(key));
+  }
+  items=items.filter(x=>x.text!==text);
+  localStorage.setItem(key,JSON.stringify(items));
+}
+function citesteDinLocalStorage(){
+  let items;
+  let raw = localStorage.getItem(key);
+  if(raw){
+    items = JSON.parse(raw);
+  }else{
+    items=[];
+  }
+  return items;    
+}
+registerHandlers();
+  </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./site.css">
+  <!-- <script src="https://kit.fontawesome.com/82b4f12a26.js" crossorigin="anonymous"></script> -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <title>Proiect 3: Spanzuratoarea</title>
+  <style>
+    *{
+  box-sizing: border-box;
+}
+.container{
+  width:80%;
+  margin:1rem auto;
+  box-shadow: 3px 3px 10px gray;
+}
+button{
+  margin:1rem;
+  padding: 1rem;
+}
+button{
+  padding: 0.3rem 1rem;
+}
+#litere{
+  border-bottom: 1px solid gray;
+  margin-bottom: 1rem;
+  height:5rem;
+  display:flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+#litere span{
+  width:30px;
+  height:40px;
+  font-size: 1.5rem;
+  text-align: center;
+  padding: 0.5rem;
+  margin-left:1rem;
+  border-bottom: 2px solid black;
+}
+
+.poza{
+  margin:0 auto;
+  max-width:60%;
+  height: 400px;
+  border:1px solid gray;
+}
+#greseli{
+  margin-left: 1rem;
+  font-size: 1.2rem;
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="litere"></div>
+    <div id="greseli"></div>
+    <button id="btn">Reset</button>
+  </div>
+  <div class="poza">
+    <svg viewBox="125.428 65.906 174.916 200.779" width="300" height="400" id = "poza">
+      <rect x="125.428" y="256.674" width="100" height="10.011" style="fill: rgb(216, 216, 216);"></rect>
+      <rect x="172.568" y="70.356" width="6.674" height="186.318" style="fill: rgb(216, 216, 216);"></rect>
+      <rect x="172.125" y="67.575" width="116.24" height="7.23" style="fill: rgb(216, 216, 216);"></rect>
+      <rect x="160.178" y="151.279" width="78.42" height="6.118" style="fill: rgb(216, 216, 216);" transform="matrix(0.629321, -0.777146, 0.777146, 0.629321, -43.098598, 161.274002)"></rect>
+      <line style="stroke: rgb(0, 0, 0);" x1="278.798" y1="74.249" x2="278.798" y2="94.272"></line>
+      <rect x="276.573" y="65.906" width="3.893" height="9.455" style="fill: rgb(7, 7, 7);"></rect>
+      <g id="id1">
+        <circle style="fill: rgb(216, 216, 216);" cx="278.643" cy="107.341" r="14.975"></circle>
+        <circle style="fill: rgb(76, 75, 75);" cx="242.042" cy="96.881" r="2.5" data-bx-origin="0.5 0.45" transform="matrix(1, 0, 0, 0.999999, 30.084049, 5.849591)"></circle>
+        <circle style="fill: rgb(76, 75, 75);" cx="242.042" cy="96.881" r="2.5" data-bx-origin="0.5 0.45" transform="matrix(1, 0, 0, 0.999999, 41.574471, 5.849591)"></circle>
+        <path style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);" d="M 271.413 112.346 L 278.643 116.24 L 284.761 113.459"></path>
+      </g>
+      <rect id="id2" x="276.809" y="121.748" width="3.893" height="56.174" style="fill: rgb(216, 216, 216);"></rect>
+      <rect id="id3" x="263.626" y="87.875" width="1.668" height="26.697" style="fill: rgb(216, 216, 216);" transform="matrix(0.866026, 0.499999, -0.499999, 0.866026, 92.770386, -73.618294)"></rect>
+      <rect id="id5" x="375.539" y="180.517" width="2.376" height="54.842" style="fill: rgb(216, 216, 216);" transform="matrix(0.927184, 0.374606, -0.391532, 0.920346, 0.194761, -131.720459)" data-bx-origin="1.243 0.497"></rect>
+      <rect id="id4" x="263.626" y="87.875" width="1.668" height="26.697" style="fill: rgb(216, 216, 216);" transform="matrix(0.866025, -0.500001, 0.500001, 0.866025, 6.900878, 191.510345)"></rect>
+      <rect id="id6" x="375.539" y="180.517" width="2.376" height="54.842" style="fill: rgb(216, 216, 216);" transform="matrix(0.927184, -0.374607, 0.357681, 0.934022, -134.235809, 147.128357)" data-bx-origin="1.243 0.497"></rect>
+    </svg>
+  </div>
+  
+  <script src="./site.js"></script>
+	<script>
+	const btn = document.getElementById('btn');
+const poza = document.getElementById('poza');
+const litere = document.getElementById('litere');
+const greseli = document.getElementById('greseli');
+
+let cuvant;
+let mistakes = 6;
+
+document.addEventListener('DOMContentLoaded',onLoad);
+document.addEventListener('keyup', onKeyUp);
+
+function onLoad(){
+  onReset();
+  btn.addEventListener('click', onReset);
+}
+function onKeyUp(e){
+  let guess = e.key;
+  if(e.keyCode<65 || e.keyCode>90) return;
+  let empty = getEmptySlots();
+  let ghicite = 0
+  empty.forEach(l=>{
+    if(l.k==guess){
+      l.textContent=guess;
+      delete l.k;
+      ghicite++;
+    }
+  });
+  if(ghicite==0){
+    greseli.textContent = `${greseli.textContent} ${guess} | `;
+    addPenalty(mistakes);
+    mistakes--;
+  }
+  if(getEmptySlots().length==0){
+    alert('ai castigat!');
+  }else if(mistakes==0){
+    alert('ai pierdut!');
+  }
+}
+function onReset(){
+  mistakes = 6;
+  greseli.innerHTML='';
+  poza.querySelectorAll('[id]').forEach(x=>x.style.display="none");
+  cuvant = alegeCuvant();
+  deseneazaCuvant(cuvant);
+}
+function alegeCuvant(){
+  let cuvinte = ['ceainic', 'balenozaur', 'cighiristan','pachiderm','rinoplastie'];
+  let ndx = genereazaNumar(-1,cuvinte.length-1);
+  return cuvinte[ndx];
+}
+function deseneazaCuvant(cuvant){
+  let litera;
+  litere.innerHTML='';
+  cuvant.split('').forEach((l,i)=>{
+    litera = document.createElement('span');
+    if(i==0 || i==cuvant.length-1)
+      litera.textContent = l;
+    else
+      litera.k = l;
+    litere.appendChild(litera);
+  });
+}
+function genereazaNumar(minValue, maxValue){
+	return Math.ceil(minValue+Math.random()*(maxValue-minValue));
+}
+function getEmptySlots(){
+  return Array.from(litere.querySelectorAll('span')).filter(l=>l.textContent=="");
+}
+function addPenalty(id){
+  poza.getElementById(`id${6 - id+1}`).style.display="inherit";
+}
+	</script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./site.css">
+  <title>Proiect 8: Minesweeper</title>
+  <style>
+    *{
+  box-sizing: border-box;
+  user-select: none;
+}
+body{
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+#joc{
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+  position: relative;
+}
+#joc div{
+  position:absolute;
+  width:30px;
+  height:30px;
+  text-align: center;
+  padding:3px;
+  font-weight: bold;
+  border:1px solid black;
+  background-color: #efefef;
+}
+div.show{
+  background-color: white !important;
+}
+img{
+  width: 100%;
+  height: 100%;
+}
+button{
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+}
+  </style>
+</head>
+<body>
+  <div id="joc">
+
+  </div>
+  <button id="btnReset" disabled>Reset</button>
+  
+  <script src="./site.js"></script>
+  <script>
+  const joc = document.getElementById('joc');
+  const btnReset = document.getElementById('btnReset');
+const linii = 11;
+const coloane = 9;
+const bw = 30;
+const m=[];
+const mine=[];
+let gameOver = false;
+let init = false;
+document.addEventListener('DOMContentLoaded', onLoad);
+
+function onLoad(){
+  joc.style.width = `${coloane*bw}px`;
+  joc.style.height = `${linii*bw}px`;
+  joc.addEventListener('click',onClick);
+  joc.addEventListener('contextmenu',onRightClick);
+  btnReset.addEventListener('click', onReset);
+  generateBoard();
+}
+function onReset(){
+	joc.innerHTML='';
+	gameOver=false;
+	init = false;
+	btnReset.disabled=true;
+	generateBoard();
+}
+function onClick(e){
+  let tg = e.target.closest('div');
+  if(init==false){
+    generateMines(10,tg.x, tg.y);
+    init = true;
+  }
+  if(gameOver || tg.flag==true || tg.classList.contains('show'))return;
+  if(tg.value=='m'){
+    tg.innerHTML = '<img src="./img/bomb.png"></img>';
+  }else{
+    tg.textContent = tg.value;
+  }
+  tg.classList.add('show');
+  if(tg.value=='m'){
+    alert('Ai pierdut!');
+    gameOver=true;
+	btnReset.disabled=false;
+  }
+  if(!tg.value){
+    showAll(tg);
+  }
+}
+function onRightClick(e){
+  e.preventDefault();
+  let tg = e.target;
+  let div = tg.closest('div');
+  if(gameOver || tg.classList.contains('show')) return;
+  div.flag = !div.flag;
+  if(div.flag==true){
+    div.innerHTML = `<img src="./img/flag.png">`
+    gameOver = mine.every(x=>x.flag==true);
+    if(gameOver==true){
+      alert('Felicitari. Ai castigat!');
+	  btnReset.disabled=false;
+    }
+  }else{
+    div.innerHTML='';
+  }
+}
+function showAll(tg){
+  let x = tg.x, y=tg.y;
+  tg.textContent = tg.value;
+  tg.classList.add('show');
+  if(tg.value) return;
+  let v = Array.from(joc.children).filter(c=>c!=tg && !c.classList.contains('show') && x-1<=c.x && x+1>=c.x && y-1<=c.y && y+1>=c.y);
+  v.forEach(showAll);
+}
+function generateBoard(){
+  m.length=0;
+  for(let i=0; i<linii; i++){
+    m.push(Array(coloane));
+    for(let j=0; j<coloane; j++){
+      let div = document.createElement('div');
+      div.x=j;
+      div.y=i;
+      div.style.top = `${i*bw}px`;
+      div.style.left = `${j*bw}px`;
+      m[i][j]=div;
+      joc.appendChild(div);
+    }
+  }
+}
+function generateMines(n,x,y){
+  let cnt = joc.children.length;
+  mine.length = 0;
+  for(let i=0;i<n; i++){
+    let elem;
+    do{
+      let ndx = genereazaNumar(0, cnt-1);
+      elem = joc.children[ndx];
+    }while(elem.value || (elem.x==x && elem.y==y))
+    elem.value='m';
+    // elem.textContent = 'X';
+    mine.push(elem);
+  }
+  generateNeighbours(mine);
+}
+function generateNeighbours(mine){
+  let l,c,val;
+  mine.forEach(e=>{
+    l = e.y;
+    c = e.x;
+    if(l>=1){
+      val = m[l-1][c].value;
+      if(val!='m'){
+        m[l-1][c].value = (val||0)+1;
+        //m[l-1][c].textContent=m[l-1][c].value;
+      }
+    }
+    if(l<linii-1){
+      val = m[l+1][c].value;
+      if(val!='m'){
+        m[l+1][c].value = (val||0)+1;
+        //m[l+1][c].textContent=m[l+1][c].value;
+      }
+    }
+    for(let i=0;i<3;i++){
+      if(l-1+i<0 || l-1+i>=linii || c==0) continue;
+      val = m[l-1+i][c-1].value;
+      if(val=='m')continue;
+      m[l-1+i][c-1].value = (val||0)+1;
+      //m[l-1+i][c-1].textContent=m[l-1+i][c-1].value;
+    }
+    for(let i=0;i<3;i++){
+      if(l-1+i<0 || l-1+i>=linii || c==coloane-1) continue;
+      val = m[l-1+i][c+1].value;
+      if(val=='m')continue;
+      m[l-1+i][c+1].value = (val||0)+1;
+      //m[l-1+i][c+1].textContent=m[l-1+i][c+1].value;
+    }
+  });
+}
+function genereazaNumar(min, max) {
+  return Math.ceil(min + Math.random() * (max - min));
+}
+
+
+  </script>
+</body>
+</html>

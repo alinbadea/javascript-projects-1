@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./site.css">
+  <title>Proiect 5: Snake</title>
+  <style>
+    *{
+  margin:0;
+  padding:0;
+}
+#joc{
+  margin:20px;
+  width:400px;
+  height: 600px;
+  border:1px solid black;
+  position:relative;
+}
+#joc div{
+  border: 1px solid black;
+  width: 10px;
+  height: 10px;
+  position: absolute;
+  display: inline-block;
+}
+#btnReset{
+  display: inline-block;
+  width:100px;
+  padding: 0.5rem 1rem;
+  margin-left:50px;
+}
+  </style>
+</head>
+<body>
+  <div id="joc">
+    
+  </div>
+  <button id="btnReset" disabled>Reset</button>
+  <script>
+const joc = document.getElementById('joc');
+const btnReset = document.getElementById('btnReset');
+
+let directie = 'r';
+const sarpe = [];
+let cap;
+const w = 400;
+const h = 600;
+const bw = 10;
+let interval = 250;
+let mancare;
+
+btnReset.addEventListener('click', onReset);
+document.addEventListener('keydown', onKeyDown);
+document.addEventListener('DOMContentLoaded', onLoad);
+
+function onReset(){
+  joc.innerHTML='';
+  sarpe.length=0;
+  btnReset.disabled=true;
+  interval=250;
+  directie = 'r';
+  creazaSarpe(200, 50);
+  genereazaMancare();
+  timer = setInterval(gameLoop, interval);
+}
+function onLoad(){
+  creazaSarpe(200, 50);
+  genereazaMancare()
+}
+
+function creazaSarpe(left, top){
+  for (let i = 0; i < 4; i++) {
+    let div = document.createElement('div');
+    div.style.top = `${top}px`;
+    div.style.left = `${left}px`;
+    left = left-bw;
+    sarpe.push(div);
+    joc.appendChild(div);
+  }
+  cap = sarpe[0];
+}
+
+let timer = setInterval(gameLoop, interval);
+
+function gameLoop(){
+  let t = parseInt(cap.style.top);
+  let l = parseInt(cap.style.left);
+  if (gameOver(t, l)) {
+    clearInterval(timer);
+    btnReset.disabled = false;
+    alert("Ai pierdut");
+    return;
+  }
+  
+  if (cap.offsetLeft == mancare.offsetLeft && 
+    cap.offsetTop == mancare.offsetTop) {
+    sarpe.splice(1, 0, mancare);
+    genereazaMancare();
+  }
+  cap.oldL = l;
+  cap.oldT = t;
+  switch(directie){
+    case 'r':
+      l=l+bw;
+      break
+    case 'l':
+      l=l-bw;
+      break
+    case 'u':
+      t=t-bw;
+      break
+    case 'd':
+      t=t+bw;
+      break
+  }  
+  cap.style.top = `${t}px`;
+  cap.style.left = `${l}px`;
+  for (let i = 1; i < sarpe.length; i++) {
+    let prev = sarpe[i - 1];
+    t = parseInt(sarpe[i].style.top);
+    l = parseInt(sarpe[i].style.left);
+    sarpe[i].oldT = t;
+    sarpe[i].oldL = l;
+    sarpe[i].style.top = `${prev.oldT}px`;
+    sarpe[i].style.left = `${prev.oldL}px`;
+  }
+}
+
+function onKeyDown(e) {
+  switch (e.key) {
+    case 'ArrowRight':
+      directie = directie!='l'?'r':directie;
+      break;
+    case 'ArrowLeft':
+      directie = directie!='r'?'l':directie;
+      break;
+    case 'ArrowUp':
+      directie = directie!='d'?'u':directie;
+      break;
+    case 'ArrowDown':
+      directie = directie!='u'?'d':directie;
+      break;
+  }
+}
+function gameOver(t, l) {
+  for (let i = 1; i < sarpe.length; i++) {
+    if (sarpe[i].offsetLeft == l && sarpe[i].offsetTop == t)
+      return true;
+  }
+  return t > h || l < 0 || t < 0 || l > w ;
+}
+function genereazaMancare() {
+  let d = document.createElement('div');
+  let t = 10 * genereazaNumar(0, h / 10);
+  let l = 10 * genereazaNumar(0, w / 10);
+  d.style.top = `${t}px`;
+  d.style.left = `${l}px`;
+  mancare = d;
+  joc.appendChild(d);
+}
+function genereazaNumar(min, max) {
+  return Math.ceil(min + Math.random() * (max - min));
+}
+  </script>
+  <script src="./site.js"></script>
+</body>
+</html>

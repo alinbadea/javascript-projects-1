@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./site.css">
+  <!-- <script src="https://kit.fontawesome.com/82b4f12a26.js" crossorigin="anonymous"></script> -->
+  <title>Proiect 2: X si 0</title>
+  <style>
+    h1{
+  text-align: center;
+}
+.container{
+  width:210px;
+  height:20vh;
+  margin:5rem auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 3rem;
+}
+.container div{
+  color: black;
+  border-bottom: 1px solid darkgray;
+  border-right: 1px solid darkgray;
+  width:70px;
+  height:70px;
+  cursor: pointer;
+}
+.container div:hover{
+  background-color: #efefef;
+}
+.container div[c="2"]{
+  border-right: none;
+}
+.container div[l="2"]{
+  border-bottom: none;
+}
+button{
+display:block;
+min-width:100px;
+margin:0 auto;
+}
+  </style>
+</head>
+<body>
+  <h1>Jucator: <span id="jucator">X</span></h1>
+  <button id="btnReset" disabled>Reset</button>
+  <div id="joc" class="container">
+
+  </div>
+  <script>
+  const joc = document.getElementById('joc');
+  const btnReset = document.getElementById('btnReset');
+const tabla = [[null, null, null],
+[null, null, null],
+[null, null, null]];
+
+let l, c;
+let jucator = "X", ocupate=0;
+
+btnReset.addEventListener('click',resetGame);
+joc.addEventListener('click', (e) => {
+  const tg = e.target;
+  l = parseInt(tg.getAttribute('l'));
+  c = parseInt(tg.getAttribute('c'));
+  if (tabla[l][c])
+    return;
+  tabla[l][c] = jucator;
+  tg.innerHTML = jucator;
+  ocupate++;
+  if (gameOver(l, c, jucator)) {
+    alert(`Felicitari ${jucator}! Ai castigat.`);
+	btnReset.disabled=false;
+  }else if(ocupate==9){
+    alert('Jocul este remiza!');
+	btnReset.disabled=false;
+  }
+  else {
+    schimbaJucator();
+  }
+});
+
+genereazaTabla();
+
+function gameOver(l, c, jucator) {
+  let cnt = 0;
+  for (let i = 0; i < 3; i++) {
+    if (tabla[l][i] == jucator)
+      cnt++;
+  }
+  if (cnt == 3) return true;
+  cnt = 0;
+  for (let i = 0; i < 3; i++) {
+    if (tabla[i][c] == jucator)
+      cnt++;
+  }
+  if (cnt == 3) return true;
+  if (l == c) {
+    cnt=0;
+    for (let i = 0; i < 3; i++) {
+      if (tabla[i][i] == jucator)
+        cnt++;
+    }
+  } else if (l + c == 2) {
+    cnt=0;
+    for (let i = 0; i < 3; i++) {
+      if (tabla[i][3-i-1] == jucator)
+        cnt++;
+    }
+  }
+  if (cnt == 3) return true;
+  return false;
+}
+function resetGame() {
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      tabla[i][j] = null;
+    }
+  }
+  Array.from(document.querySelectorAll('div[l]')).forEach(x => {
+    x.textContent = null;
+  });
+  document.getElementById('jucator').textContent=jucator;
+  ocupate = 0;
+  btnReset.disabled=true;
+}
+function genereazaTabla() {
+  let l, c;
+  for (let i = 0; i < 9; i++) {
+    let e = document.createElement("div");
+    l = Math.round((i + 2) / 3) - 1;
+    c = Math.round((i) % 3);
+    e.setAttribute('l', l);
+    e.setAttribute('c', c);
+    joc.appendChild(e);
+  }
+}
+function schimbaJucator() {
+  jucator = jucator == "X" ? "0" : "X";
+  document.getElementById('jucator').textContent=jucator;
+}
+
+  </script>
+</body>
+</html>
